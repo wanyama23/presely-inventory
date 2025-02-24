@@ -1,7 +1,66 @@
 import tkinter as tk
-from tkinter import PhotoImage, LEFT, HORIZONTAL, VERTICAL, BOTTOM, RIGHT
+from tkinter import PhotoImage, LEFT, HORIZONTAL, VERTICAL, BOTTOM, RIGHT, END
 from tkinter import ttk
+from tkinter import messagebox
 from tkcalendar import DateEntry
+import pymysql
+
+        
+# def connect_database():
+#     try:
+#         connection = pymysql.connect(host='localhost', user='root', password='1234')
+#         cursor = connection.cursor()
+#     except:
+#         messagebox.showerror('Error', 'Database connectivity issue, open mysql command line client.')
+#         return None, None
+#     cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
+#     cursor.execute('USE inventory_system')
+#     cursor.execute('CREATE TABLE IF NOT EXISTS employee_data (empid INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(100), gender VARCHAR(50), contact VARCHAR(100), dob VARCHAR(30), employment_type VARCHAR(50), education VARCHAR(100), work_shift VARCHAR(50), address VARCHAR(100), doj VARCHAR(30), salary VARCHAR(50), usertype VARCHAR(50), password VARCHAR(50))')
+    
+#     return cursor,connection
+
+def connect_database():
+    try:
+        connection = pymysql.connect(host='localhost', user='root', password='1234')
+        cursor = connection.cursor()
+    except pymysql.MySQLError as e:
+        messagebox.showerror('Error', f'Database connectivity issue: {e}')
+        return None, None
+    
+    try:
+        cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
+        cursor.execute('USE inventory_system')
+        cursor.execute('CREATE TABLE IF NOT EXISTS employee_data (empid INT PRIMARY KEY, name VARCHAR(100), email VARCHAR(100), gender VARCHAR(50), contact VARCHAR(100), dob VARCHAR(30), employment_type VARCHAR(50), education VARCHAR(100), work_shift VARCHAR(50), address VARCHAR(100), doj VARCHAR(30), salary VARCHAR(50), usertype VARCHAR(50), password VARCHAR(50))')
+    except pymysql.MySQLError as e:
+        messagebox.showerror('Error', f'Database setup issue: {e}')
+        return None, None
+
+    return cursor, connection
+
+
+def treeview_data():
+    cursor,connection=connect_database()
+    if not cursor or not connection:
+        return
+    cursor.execute('SELECT * from employee_data')
+    employee_records=cursor.fetchall()
+    print(employee_records)
+
+def add_employee(empid,name,email,gender,dob,contact,employment_type,education,work_shift,address,doj,salary,user_type,
+                 password):
+    if (empid== '' or name=='' or email=='' or gender=='Select Gender' or contact=='' or employment_type=='select type' or
+        education=='Select Education' or work_shift=='select Shift' or address=='\n' or salary=='' or
+        user_type=='select User Type' or password==''):
+      messagebox.showerror("Error", "All fields are required")
+    else:
+        cursor,connection=connect_database()
+        if not cursor or not connection:
+            return
+        cursor.execute('INSERT INTO employee_data VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',(empid,name,email,gender,dob,contact,employment_type,education,work_shift,address,doj,salary,user_type,
+                 password))
+        connection.commit()
+        treeview_data()
+        messagebox.showinfo('Success','Data is inserted successfully')
 
 
 def employee_form(root):
@@ -162,7 +221,10 @@ def employee_form(root):
     button_frame=tk.Frame(employee_frame,bg='white')
     button_frame.place(x=200,y=530)
 
-    add_button=tk.Button(button_frame,text='Add',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d')
+    add_button=tk.Button(button_frame,text='Add',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :add_employee(empid_entry.get(),name_entry.get(),email_entry.get(),gender_combobox.get(),
+                                                                                                                                                  dob_date_entry.get(),contact_enrty.get(),employment_type_combobox.get(),
+                                                                                                                                                  education_combobox.get(),work_shift_combobox.get(),address_text.get(1.0,END),
+                                                                                                                                                  doj_date_entry.get(),salary_enrty.get(),usertype_combobox.get(),password_enrty.get()))
     add_button.grid(row=0,column=0,padx=20)
 
     update_button=tk.Button(button_frame,text='Update',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d')
@@ -177,3 +239,133 @@ def employee_form(root):
 
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # def connect_database():
+#     try:
+#         # Connect to MySQL database
+#         connection = pymysql.connect(host='localhost', user='root', password='1234', database='inventory_system')
+#         cursor = connection.cursor()
+#     except pymysql.MySQLError as e:
+#         # Show error message if connection fails
+#         messagebox.showerror('Error', f'Database connectivity issue: {str(e)}')
+#         return None, None
+    
+#     # Create database if it doesn't exist
+#     cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
+#     cursor.execute('USE inventory_system')
+
+#     # Create table if it doesn't exist
+#     cursor.execute('''CREATE TABLE IF NOT EXISTS employee_data (
+#                         empid INT PRIMARY KEY, 
+#                         name VARCHAR(100), 
+#                         email VARCHAR(100), 
+#                         gender VARCHAR(50), 
+#                         contact VARCHAR(100), 
+#                         dob VARCHAR(30), 
+#                         employment_type VARCHAR(50), 
+#                         education VARCHAR(100), 
+#                         work_shift VARCHAR(50), 
+#                         address VARCHAR(100), 
+#                         doj VARCHAR(30), 
+#                         salary VARCHAR(50), 
+#                         usertype VARCHAR(50), 
+#                         password VARCHAR(50)
+#                       )''')
+
+#     return cursor, connection
+    # connection.commit()
+    # connection.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # def connect_database():
+#     try:
+#         connection = pymysql.connect(host='localhost', user='root', password='1234')
+#         cursor = connection.cursor()
+#         cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
+#         cursor.execute('USE inventory_system')
+#         cursor.execute('''CREATE TABLE IF NOT EXISTS employee_data (
+#                             empid INT PRIMARY KEY, 
+#                             name VARCHAR(100), 
+#                             email VARCHAR(100), 
+#                             gender VARCHAR(50), 
+#                             contact VARCHAR(100), 
+#                             dob VARCHAR(30), 
+#                             employment_type VARCHAR(50), 
+#                             education VARCHAR(100), 
+#                             work_shift VARCHAR(50), 
+#                             address VARCHAR(100), 
+#                             doj VARCHAR(30), 
+#                             salary VARCHAR(50), 
+#                             usertype VARCHAR(50), 
+#                             password VARCHAR(50)
+#                           )''')
+#         return cursor, connection
+#     except pymysql.MySQLError as e:
+#         # Create a Tkinter root window
+#         root = tk()
+#         root.withdraw()  # Hide the root window
+#         messagebox.showerror('Error', f'Database connectivity issue: {str(e)}')
+#         root.destroy()  # Destroy the root window
+#         return None, None
+
+# def treeview_data():
+#     cursor, connection = connect_database()
+#     if not cursor or not connection:
+#         return
+#     cursor.execute('SELECT * FROM employee_data')
+#     employee_records = cursor.fetchall()
+#     print(employee_records)
+
+# def add_employee(empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, user_type, password):
+#     if (empid == '' or name == '' or email == '' or gender == 'Select Gender' or contact == '' or employment_type == 'select type' or education == 'Select Education' or work_shift == 'select Shift' or address == '\n' or salary == '' or user_type == 'select User Type' or password == ''):
+#         messagebox.showerror("Error", "All fields are required")
+#     else:
+#         cursor, connection = connect_database()
+#         if not cursor or not connection:
+#             return
+#         cursor.execute('INSERT INTO employee_data VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', (empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, user_type, password))
+#         connection.commit()
+#         treeview_data()
+#         messagebox.showinfo('Success', 'Data is inserted successfully')
