@@ -4,6 +4,7 @@ from tkinter import ttk
 
 import pymysql
 from employee import employee_form
+from supplier import supplier_form
 
 
 
@@ -222,7 +223,7 @@ employee_button.pack(fill=tk.X)
 
 # Create supplier button
 supplier_icon = PhotoImage(file='tracking.png')
-supplier_button = tk.Button(leftFrame, image=supplier_icon, compound=LEFT, text='Suppliers', font=('times new roman', 20, 'bold'), anchor='w')
+supplier_button = tk.Button(leftFrame, image=supplier_icon, compound=LEFT, text='Suppliers', font=('times new roman', 20, 'bold'), anchor='w',padx=10,command=lambda:supplier_form(root))
 supplier_button.pack(fill=tk.X)
 
 # Create category button
