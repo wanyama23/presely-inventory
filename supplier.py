@@ -18,6 +18,28 @@ def treeview_data(treeview):
 
 
 
+def select_data(event, invoice_entry, name_entry, contact_entry, description_text, treeview):
+    try:
+        # Get the selected item in the Treeview
+        selected_row = treeview.selection()[0]
+        row = treeview.item(selected_row, 'values')  # Get the values from the selected row
+
+        # Populate the fields in the supplier form
+        invoice_entry.delete(0, END)
+        invoice_entry.insert(0, row[0])  # Invoice number
+
+        name_entry.delete(0, END)
+        name_entry.insert(0, row[1])  # Supplier name
+
+        contact_entry.delete(0, END)
+        contact_entry.insert(0, row[2])  # Supplier contact
+
+        description_text.delete(1.0, END)
+        description_text.insert(1.0, row[3])  # Description
+    except IndexError:
+        messagebox.showerror('Error', 'No item selected')
+    except Exception as e:
+        messagebox.showerror('Error', f'Error due to {e}')
 
 
 # def add_supplier(invoice, name, contact, description,treeview):
@@ -71,6 +93,92 @@ def add_supplier(invoice, name, contact, description, treeview):
             connection.close()    
 
 
+def update_supplier(invoice, name, contact, description, treeview):
+    if invoice == '' or name == '' or contact == '' or description.strip() == '':
+        messagebox.showerror('Error', 'All fields are required')
+    else:
+        cursor, connection = connect_database()
+        if not cursor or not connection:
+            return
+        try:
+            cursor.execute('use inventory_system')
+            cursor.execute('SELECT * FROM supplier_data WHERE invoice=%s', (invoice,))
+            record = cursor.fetchone()
+            if not record:
+                messagebox.showerror('Error', 'Invoice ID does not exist')
+                return
+
+            # Perform the update
+            cursor.execute(
+                'UPDATE supplier_data SET name=%s, contact=%s, description=%s WHERE invoice=%s',
+                (name, contact, description.strip(), invoice)
+            )
+            connection.commit()
+
+            # Check if the update was successful
+            if cursor.rowcount == 0:
+                messagebox.showerror('Error', 'No updates made')
+            else:
+                messagebox.showinfo('Info', 'Data updated successfully')
+                treeview_data(treeview)
+
+        except Exception as e:
+            messagebox.showerror('Error', f'Error due to {e}')
+        finally:
+            cursor.close()
+            connection.close()
+
+
+def delete_supplier(invoice, treeview):
+    if invoice == '':
+        messagebox.showerror('Error', 'Invoice number is required')
+    else:
+        cursor, connection = connect_database()
+        if not cursor or not connection:
+            return
+        try:
+            cursor.execute('use inventory_system')
+            cursor.execute('SELECT * FROM supplier_data WHERE invoice=%s', (invoice,))
+            if not cursor.fetchone():
+                messagebox.showerror('Error', 'Invoice ID does not exist')
+                return
+            cursor.execute('DELETE FROM supplier_data WHERE invoice=%s', (invoice,))
+            connection.commit()
+            messagebox.showinfo('Info', 'Data deleted successfully')
+            treeview_data(treeview)
+        except Exception as e:
+            messagebox.showerror('Error', f'Error due to {e}')
+        finally:
+            cursor.close()
+            connection.close()
+
+def search_supplier(invoice, treeview):
+    if invoice == '':
+        messagebox.showerror('Error', 'Invoice number is required for search')
+    else:
+        cursor, connection = connect_database()
+        if not cursor or not connection:
+            return
+        try:
+            cursor.execute('use inventory_system')
+            cursor.execute('SELECT * FROM supplier_data WHERE invoice=%s', (invoice,))
+            record = cursor.fetchone()
+            treeview.delete(*treeview.get_children())
+            if record:
+                treeview.insert('', END, values=record)
+            else:
+                messagebox.showinfo('Info', 'No record found')
+        except Exception as e:
+            messagebox.showerror('Error', f'Error due to {e}')
+        finally:
+            cursor.close()
+            connection.close()
+            
+def clear_fields(invoice_entry, name_entry, contact_entry, description_text):
+    invoice_entry.delete(0, END)
+    name_entry.delete(0, END)
+    contact_entry.delete(0, END)
+    description_text.delete(1.0, END)
 
 
 def supplier_form(root):
@@ -119,13 +227,13 @@ def supplier_form(root):
     add_button=tk.Button(button_Frame, text='Add', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :add_supplier(invoice_entry.get(),name_entry.get(),contact_entry.get(),description_text.get(1.0,END),treeview))
     add_button.grid(row=0,column=0,padx=20)
 
-    update_button=tk.Button(button_Frame, text='Update', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    update_button=tk.Button(button_Frame, text='Update', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: update_supplier(invoice_entry.get(), name_entry.get(), contact_entry.get(), description_text.get(1.0, END), treeview))
     update_button.grid(row=0,column=1)
 
-    delete_button=tk.Button(button_Frame, text='Delete', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    delete_button=tk.Button(button_Frame, text='Delete', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: delete_supplier(invoice_entry.get(), treeview))
     delete_button.grid(row=0,column=2, padx=20)
 
-    clear_button=tk.Button(button_Frame, text='Clear', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    clear_button=tk.Button(button_Frame, text='Clear', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: clear_fields(invoice_entry, name_entry, contact_entry, description_text))
     clear_button.grid(row=0,column=3)
 
 
@@ -141,10 +249,10 @@ def supplier_form(root):
     search_entry=tk.Entry(search_frame,font=('times new roman',14,'bold'),bg='lightyellow',width=12)
     search_entry.grid(row=0,column=1)
 
-    search_button=tk.Button(search_frame, text='Search', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    search_button=tk.Button(search_frame, text='Search', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: search_supplier(search_entry.get(), treeview))
     search_button.grid(row=0,column=2,padx=15)
 
-    show_button=tk.Button(search_frame, text='Show All', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    show_button=tk.Button(search_frame, text='Show All', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: treeview_data(treeview))
     show_button.grid(row=0,column=3)
      
 
@@ -166,8 +274,11 @@ def supplier_form(root):
     treeview.column('name',width=160)
     treeview.column('contact',width=120)
     treeview.column('description',width=300)
+    # Bind Treeview selection to the select_data function
+    treeview.bind('<ButtonRelease-1>', lambda event: select_data(event, invoice_entry, name_entry, contact_entry, description_text, treeview))
 
     treeview_data(treeview)
+
 
 
 
