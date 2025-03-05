@@ -1,6 +1,77 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import PhotoImage, HORIZONTAL, VERTICAL, BOTTOM, RIGHT, X, Y, BOTH
+from tkinter import PhotoImage, HORIZONTAL, VERTICAL, BOTTOM, RIGHT, X, Y, BOTH, END
+from tkinter import messagebox
+from employee import connect_database
+
+
+def treeview_data(treeview):
+    cursor,connection=connect_database()
+    if not cursor or not connection:
+        return
+    cursor.execute('use inventory_system')
+    cursor.execute('select * from supplier_data')
+    records=cursor.fetchall()
+    treeview.delete(*treeview.get_children())
+    for record in records:
+        treeview.insert('',END,values=record)
+
+
+
+
+
+# def add_supplier(invoice, name, contact, description,treeview):
+#     if invoice=='' or name=='' or contact=='' or description.strip()=='':
+#         messagebox.showerror('Error','All fields are requires')
+#     else:
+#         cursor,connection=connect_database()
+#         if not cursor or not connection:
+#             return
+#         try:
+#         cursor.execute('use inventory_system')
+#         cursor.execute('SELECT * from supplier_data WHERE invoice=%s',invoice)
+#         if cursor.fetchone():
+#             messagebox.showerror('Error','Id already exists')
+#         cursor.execute('CREATE TABLE IF NOT EXISTS supplier_data(invoice INT PRIMARY KEY,name VARCHAR(100), contact VARCHAR(15), description TEXT)') 
+
+#         cursor.execute('INSERT INTO supplier_data VALUES(%s,%s,%s,%s)',(invoice,name,contact,description.strip()))   
+#         connection.commit()
+#         messagebox.showinfo('info','Data is inserted')
+#         treeview_data(treeview)
+#     except Exception as e:
+# messagebox.showerror('Error',f'Error due to {e}')
+
+
+def add_supplier(invoice, name, contact, description, treeview):
+    if invoice == '' or name == '' or contact == '' or description.strip() == '':
+        messagebox.showerror('Error', 'All fields are required')
+    else:
+        cursor, connection = connect_database()
+        if not cursor or not connection:
+            return
+        try:
+            cursor.execute('use inventory_system')
+            cursor.execute('SELECT * from supplier_data WHERE invoice=%s', (invoice,))
+            if cursor.fetchone():
+                messagebox.showerror('Error', 'Invoice ID already exists')
+                return
+            cursor.execute(
+                'CREATE TABLE IF NOT EXISTS supplier_data(invoice INT PRIMARY KEY, name VARCHAR(100), contact VARCHAR(15), description TEXT)'
+            )
+            cursor.execute(
+                'INSERT INTO supplier_data VALUES(%s, %s, %s, %s)', (invoice, name, contact, description.strip())
+            )
+            connection.commit()
+            messagebox.showinfo('Info', 'Data inserted successfully')
+            treeview_data(treeview)
+        except Exception as e:
+            messagebox.showerror('Error', f'Error due to {e}')
+        finally:
+            cursor.close()
+            connection.close()    
+
+
+
 
 def supplier_form(root):
     global back_image
@@ -45,7 +116,7 @@ def supplier_form(root):
     button_Frame=tk.Frame(left_frame,bg='white')
     button_Frame.grid(row=4,columnspan=2,pady=20)
 
-    add_button=tk.Button(button_Frame, text='Add', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
+    add_button=tk.Button(button_Frame, text='Add', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :add_supplier(invoice_entry.get(),name_entry.get(),contact_entry.get(),description_text.get(1.0,END),treeview))
     add_button.grid(row=0,column=0,padx=20)
 
     update_button=tk.Button(button_Frame, text='Update', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d')
@@ -95,6 +166,8 @@ def supplier_form(root):
     treeview.column('name',width=160)
     treeview.column('contact',width=120)
     treeview.column('description',width=300)
+
+    treeview_data(treeview)
 
 
 
