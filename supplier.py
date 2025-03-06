@@ -233,7 +233,7 @@ def supplier_form(root):
     delete_button=tk.Button(button_Frame, text='Delete', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: delete_supplier(invoice_entry.get(), treeview))
     delete_button.grid(row=0,column=2, padx=20)
 
-    clear_button=tk.Button(button_Frame, text='Clear', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: clear_fields(invoice_entry, name_entry, contact_entry, description_text))
+    clear_button=tk.Button(button_Frame, text='Clear', font=('times new roman',14), width=8, cursor='hand2',fg='white',bg='#0f4d7d',command=lambda: clear_fields(invoice_entry, name_entry, contact_entry, description_text)) 
     clear_button.grid(row=0,column=3)
 
 
