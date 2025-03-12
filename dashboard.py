@@ -6,6 +6,7 @@ import pymysql
 from employee import employee_form
 from supplier import supplier_form
 from category import category_form
+from product import product_form
 
 
 
@@ -234,7 +235,7 @@ category_button.pack(fill=tk.X)
 
 # Create product button
 product_icon = PhotoImage(file='cubes.png')
-product_button = tk.Button(leftFrame, image=product_icon, compound=LEFT, text='Products', font=('times new roman', 20, 'bold'), anchor='w')
+product_button = tk.Button(leftFrame, image=product_icon, compound=LEFT, text='Products', font=('times new roman', 20, 'bold'), anchor='w',padx=10,command=lambda:product_form(root))
 product_button.pack(fill=tk.X)
 
 # Create sales button
