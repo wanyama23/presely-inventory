@@ -581,7 +581,8 @@ def employee_form(root):
     password_label=tk.Label(detail_frame,text='Password',font=('times new roman',12))
     password_label.grid(row=4,column=4, padx=20, pady=10)
     password_enrty=tk.Entry(detail_frame,font=('times new roman',12), bg='lightyellow')
-    password_enrty.grid(row=4,column=5, padx=20,pady=10)
+    password_enrty.grid(row=4,column=5, padx=20,pady=10)\
+    
 
 
     button_frame=tk.Frame(employee_frame,bg='white')
@@ -593,11 +594,31 @@ def employee_form(root):
                                                                                                                                                   doj_date_entry.get(),salary_enrty.get(),usertype_combobox.get(),password_enrty.get()))
     add_button.grid(row=0,column=0,padx=20)
 
-    update_button=tk.Button(button_frame,text='Update',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :update_employee(empid_entry.get(),name_entry.get(),email_entry.get(),gender_combobox.get(),
-                                                                                                                                                  dob_date_entry.get(),contact_enrty.get(),employment_type_combobox.get(),
-                                                                                                                                                  education_combobox.get(),work_shift_combobox.get(),address_text.get(1.0,END),
-                                                                                                                                                  doj_date_entry.get(),salary_enrty.get(),usertype_combobox.get(),password_enrty.get()))
+
+    update_button = tk.Button(
+    button_frame,
+    text='Update',
+    font=('times new roman', 12),
+    width=10,
+    cursor='hand2',
+    fg='white',
+    bg='#0f4d7d',
+    command=lambda: update_employee(
+        empid_entry.get(),
+        name_entry.get(),
+        email_entry.get(),
+        gender_combobox.get(),
+        treeview  # Pass the treeview argument here
+    )
+)
     update_button.grid(row=0,column=1,padx=20)
+
+
+    # update_button=tk.Button(button_frame,text='Update',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :update_employee(empid_entry.get(),name_entry.get(),email_entry.get(),gender_combobox.get(),
+    #                                                                                                                                               dob_date_entry.get(),contact_enrty.get(),employment_type_combobox.get(),
+    #                                                                                                                                               education_combobox.get(),work_shift_combobox.get(),address_text.get(1.0,END),
+    #                                                                                                                                               doj_date_entry.get(),salary_enrty.get(),usertype_combobox.get(),password_enrty.get()))
+    # update_button.grid(row=0,column=1,padx=20)
 
     delete_button=tk.Button(button_frame,text='Delete',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d')
     delete_button.grid(row=0,column=2,padx=20)
