@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import PhotoImage, LEFT
-from datetime import datetime  # Import datetime module
+from datetime import datetime
+from tkinter import messagebox  # For error messages
 import pymysql
 from employee import employee_form
 from supplier import supplier_form
@@ -19,133 +20,232 @@ def update_datetime(subtitle_label):
     subtitle_label.after(1000, update_datetime, subtitle_label)
 
 
-root = tk.Tk()
-root.title("Dashboard")
-root.geometry("1270x668+0+0")
-root.config(bg='white')
+def show_dashboard():
+    """Function to show the admin dashboard after successful login."""
+    root = tk.Tk()
+    root.title("Dashboard")
+    root.geometry("1270x668+0+0")
+    root.config(bg='white')
 
-# Load background image
-bg_image = PhotoImage(file='inventory(1).png')
+    # Store global references to prevent garbage collection of images
+    global bg_image, employee_icon, supplier_icon, category_icon, product_icon, sales_icon, exit_icon
 
-# Create label with image and text
-titleLabel = tk.Label(root, image=bg_image, compound=LEFT, text='  Presely Management System', font=('times new roman', 40, 'bold'), bg='#010048', fg='white', anchor='w', padx=20)
-titleLabel.place(x=0, y=0, relwidth=1)
+    # Load background image
+    try:
+        bg_image = PhotoImage(file='inventory(1).png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load background image. Ensure the file exists. {e}")
+        return
 
-# Create Logout button
-logoutButton = tk.Button(root, text='Logout', font=('times new roman', 20, 'bold'), fg='#010048')
-logoutButton.place(x=1100, y=10)
+    # Load all icon images with debugging for each file path
+    try:
+        employee_icon = PhotoImage(file='man.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load employee icon. Ensure the file exists. {e}")
+        return
 
-# Create subtitle label
-subtitleLabel = tk.Label(root, font=('times new roman', 15), bg='#4d636d', fg='white')
-subtitleLabel.place(x=0, y=70, relwidth=1)
-# Call the update_datetime function to update the label with the current time
-update_datetime(subtitleLabel)
+    try:
+        supplier_icon = PhotoImage(file='tracking.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load supplier icon. Ensure the file exists. {e}")
+        return
 
-# Create left frame
-leftFrame = tk.Frame(root)
-leftFrame.place(x=0, y=102, width=200, height=555)
+    try:
+        category_icon = PhotoImage(file='categorization.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load category icon. Ensure the file exists. {e}")
+        return
 
-# Load and display logo image
-logoImage = PhotoImage(file='checklist.png')
-imageLabel = tk.Label(leftFrame, image=logoImage)
-imageLabel.pack()
+    try:
+        product_icon = PhotoImage(file='cubes.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load product icon. Ensure the file exists. {e}")
+        return
 
-# Create menu label
-menuLabel = tk.Label(leftFrame, text='Menu', font=('times new roman', 20), bg='#009688')
-menuLabel.pack(fill=tk.X)
+    try:
+        sales_icon = PhotoImage(file='trend.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load sales icon. Ensure the file exists. {e}")
+        return
 
-# Create employee button
-employee_icon = PhotoImage(file='man.png')
-employee_button = tk.Button(leftFrame, image=employee_icon, compound=LEFT, text='Employees', font=('times new roman', 20, 'bold'), anchor='w', padx=10, command=lambda: employee_form(root))
-employee_button.pack(fill=tk.X)
+    try:
+        exit_icon = PhotoImage(file='logout.png')
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to load exit icon. Ensure the file exists. {e}")
+        return
 
-# Create supplier button
-supplier_icon = PhotoImage(file='tracking.png')
-supplier_button = tk.Button(leftFrame, image=supplier_icon, compound=LEFT, text='Suppliers', font=('times new roman', 20, 'bold'), anchor='w', padx=10, command=lambda: supplier_form(root))
-supplier_button.pack(fill=tk.X)
+    # Create label with image and text
+    titleLabel = tk.Label(root, image=bg_image, compound=LEFT, text='  Presely Management System',
+                          font=('times new roman', 40, 'bold'), bg='#010048', fg='white', anchor='w', padx=20)
+    titleLabel.place(x=0, y=0, relwidth=1)
 
-# Create category button
-category_icon = PhotoImage(file='categorization.png')
-category_button = tk.Button(leftFrame, image=category_icon, compound=LEFT, text='Categories', font=('times new roman', 20, 'bold'), anchor='w', padx=10, command=lambda: category_form(root))
-category_button.pack(fill=tk.X)
+    # Create Logout button
+    logoutButton = tk.Button(root, text='Logout', font=('times new roman', 20, 'bold'), fg='#010048',
+                              command=root.destroy)  # Close the dashboard
+    logoutButton.place(x=1100, y=10)
 
-# Create product button
-product_icon = PhotoImage(file='cubes.png')
-product_button = tk.Button(leftFrame, image=product_icon, compound=LEFT, text='Products', font=('times new roman', 20, 'bold'), anchor='w', padx=10, command=lambda: product_form(root))
-product_button.pack(fill=tk.X)
+    # Create subtitle label
+    subtitleLabel = tk.Label(root, font=('times new roman', 15), bg='#4d636d', fg='white')
+    subtitleLabel.place(x=0, y=70, relwidth=1)
+    update_datetime(subtitleLabel)  # Call the function to update the time
 
-# Create sales button
-sales_icon = PhotoImage(file='trend.png')
-sales_button = tk.Button(leftFrame, image=sales_icon, compound=LEFT, text='Sales', font=('times new roman', 20, 'bold'), anchor='w', padx=10, command=lambda: sale_form(root))
-sales_button.pack(fill=tk.X)
+    # Create left frame
+    leftFrame = tk.Frame(root)
+    leftFrame.place(x=0, y=102, width=200, height=555)
 
-# Create exit button
-exit_icon = PhotoImage(file='logout.png')
-exit_button = tk.Button(leftFrame, image=exit_icon, compound=LEFT, text='Exit', font=('times new roman', 20, 'bold'), anchor='w')
-exit_button.pack(fill=tk.X)
+    # Load and display logo image
+    logoImage = PhotoImage(file='checklist.png')
+    root.logoImage = logoImage  # Prevent garbage collection
+    imageLabel = tk.Label(leftFrame, image=logoImage)
+    imageLabel.pack()
 
-# Frames and other widgets remain unchanged
-emp_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
-emp_frame.place(x=400, y=125, height=170, width=280)
-total_emp_icon = PhotoImage(file='division(1).png')
-total_emp_icon_label = tk.Label(emp_frame, image=total_emp_icon, bg='#2c3e50')
-total_emp_icon_label.pack(pady=10)
+    # Create menu label
+    menuLabel = tk.Label(leftFrame, text='Menu', font=('times new roman', 20), bg='#009688')
+    menuLabel.pack(fill=tk.X)
 
-total_emp_label = tk.Label(emp_frame, text='Total Employees', bg='#2c3e50', fg='white', font=('times new roman', 15, 'bold'))
-total_emp_label.pack()
+    # Create buttons for various modules with images
+    employee_button = tk.Button(leftFrame, image=employee_icon, compound=LEFT, text='Employees',
+                                 font=('times new roman', 20, 'bold'), anchor='w', padx=10,
+                                 command=lambda: employee_form(root))
+    employee_button.pack(fill=tk.X)
 
-total_emp_count_label = tk.Label(emp_frame, text='0', bg='#2c3e50', fg='white', font=('times new roman', 30, 'bold'))
-total_emp_count_label.pack()
+    supplier_button = tk.Button(leftFrame, image=supplier_icon, compound=LEFT, text='Suppliers',
+                                 font=('times new roman', 20, 'bold'), anchor='w', padx=10,
+                                 command=lambda: supplier_form(root))
+    supplier_button.pack(fill=tk.X)
 
-sup_frame = tk.Frame(root, bg='#8e44ad', bd=3, relief='ridge')
-sup_frame.place(x=800, y=125, height=170, width=280)
-total_sup_icon = PhotoImage(file='supplier(1).png')
-total_sup_icon_label = tk.Label(sup_frame, image=total_sup_icon, bg='#8e44ad')
-total_sup_icon_label.pack(pady=10)
+    category_button = tk.Button(leftFrame, image=category_icon, compound=LEFT, text='Categories',
+                                 font=('times new roman', 20, 'bold'), anchor='w', padx=10,
+                                 command=lambda: category_form(root))
+    category_button.pack(fill=tk.X)
 
-total_sup_label = tk.Label(sup_frame, text='Total Suppliers', bg='#8e44ad', fg='white', font=('times new roman', 15, 'bold'))
-total_sup_label.pack()
+    product_button = tk.Button(leftFrame, image=product_icon, compound=LEFT, text='Products',
+                                font=('times new roman', 20, 'bold'), anchor='w', padx=10,
+                                command=lambda: product_form(root))
+    product_button.pack(fill=tk.X)
 
-total_sup_count_label = tk.Label(sup_frame, text='0', bg='#8e44ad', fg='white', font=('times new roman', 30, 'bold'))
-total_sup_count_label.pack()
+    sales_button = tk.Button(leftFrame, image=sales_icon, compound=LEFT, text='Sales',
+                              font=('times new roman', 20, 'bold'), anchor='w', padx=10,
+                              command=lambda: sale_form(root))
+    sales_button.pack(fill=tk.X)
 
-cat_frame = tk.Frame(root, bg='#27ae60', bd=3, relief='ridge')
-cat_frame.place(x=400, y=310, height=170, width=280)
-total_cat_icon = PhotoImage(file='market-segment.png')
-total_cat_icon_label = tk.Label(cat_frame, image=total_cat_icon, bg='#27ae60')
-total_cat_icon_label.pack(pady=10)
+    exit_button = tk.Button(leftFrame, image=exit_icon, compound=LEFT, text='Exit',
+                             font=('times new roman', 20, 'bold'), anchor='w', command=root.destroy)
+    exit_button.pack(fill=tk.X)
 
-total_cat_label = tk.Label(cat_frame, text='Category', bg='#27ae60', fg='white', font=('times new roman', 15, 'bold'))
-total_cat_label.pack()
+    # Frames and widgets from the original code
+    emp_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
+    emp_frame.place(x=400, y=125, height=170, width=280)
+    total_emp_icon = PhotoImage(file='division(1).png')
+    total_emp_icon_label = tk.Label(emp_frame, image=total_emp_icon, bg='#2c3e50')
+    total_emp_icon_label.pack(pady=10)
 
-total_cat_count_label = tk.Label(cat_frame, text='0', bg='#27ae60', fg='white', font=('times new roman', 30, 'bold'))
-total_cat_count_label.pack()
+    total_emp_label = tk.Label(emp_frame, text='Total Employees', bg='#2c3e50', fg='white',
+                               font=('times new roman', 15, 'bold'))
+    total_emp_label.pack()
 
-prod_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
-prod_frame.place(x=800, y=310, height=170, width=280)
-total_prod_icon = PhotoImage(file='products.png')
-total_prod_icon_label = tk.Label(prod_frame, image=total_prod_icon, bg='#2c3e50')
-total_prod_icon_label.pack(pady=10)
+    total_emp_count_label = tk.Label(emp_frame, text='0', bg='#2c3e50', fg='white',
+                                     font=('times new roman', 30, 'bold'))
+    total_emp_count_label.pack()
 
-total_prod_label = tk.Label(prod_frame, text='Total Products', bg='#2c3e50', fg='white', font=('times new roman', 15, 'bold'))
-total_prod_label.pack()
 
-total_prod_count_label = tk.Label(prod_frame, text='0', bg='#2c3e50', fg='white', font=('times new roman', 30, 'bold'))
-total_prod_count_label.pack()
+    sup_frame = tk.Frame(root, bg='#8e44ad', bd=3, relief='ridge')
+    sup_frame.place(x=800, y=125, height=170, width=280)
+    total_sup_icon = PhotoImage(file='supplier(1).png')
+    total_sup_icon_label = tk.Label(sup_frame, image=total_sup_icon, bg='#8e44ad')
+    total_sup_icon_label.pack(pady=10)
 
-sales_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
-sales_frame.place(x=600, y=495, height=170, width=280)
-total_sales_icon = PhotoImage(file='graph.png')
-total_sales_icon_label = tk.Label(sales_frame, image=total_sales_icon, bg='#2c3e50')
-total_sales_icon_label.pack(pady=10)
+    total_sup_label = tk.Label(sup_frame, text='Total Suppliers', bg='#8e44ad', fg='white', font=('times new roman', 15, 'bold'))
+    total_sup_label.pack()
 
-total_sales_label = tk.Label(sales_frame, text='Total Sales', bg='#2c3e50', fg='white', font=('times new roman', 15, 'bold'))
-total_sales_label.pack()
+    total_sup_count_label = tk.Label(sup_frame, text='0', bg='#8e44ad', fg='white', font=('times new roman', 30, 'bold'))
+    total_sup_count_label.pack()
 
-total_sales_count_label = tk.Label(sales_frame, text='0', bg='#2c3e50', fg='white', font=('times new roman', 30, 'bold'))
-total_sales_count_label.pack()
+    cat_frame = tk.Frame(root, bg='#27ae60', bd=3, relief='ridge')
+    cat_frame.place(x=400, y=310, height=170, width=280)
+    total_cat_icon = PhotoImage(file='market-segment.png')
+    total_cat_icon_label = tk.Label(cat_frame, image=total_cat_icon, bg='#27ae60')
+    total_cat_icon_label.pack(pady=10)
 
-root.mainloop()
+    total_cat_label = tk.Label(cat_frame, text='Category', bg='#27ae60', fg='white', font=('times new roman', 15, 'bold'))
+    total_cat_label.pack()
+
+    total_cat_count_label = tk.Label(cat_frame, text='0', bg='#27ae60', fg='white', font=('times new roman', 30, 'bold'))
+    total_cat_count_label.pack()
+
+    prod_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
+    prod_frame.place(x=800, y=310, height=170, width=280)
+    total_prod_icon = PhotoImage(file='products.png')
+    total_prod_icon_label = tk.Label(prod_frame, image=total_prod_icon, bg='#2c3e50')
+    total_prod_icon_label.pack(pady=10)
+
+    total_prod_label = tk.Label(prod_frame, text='Total Products', bg='#2c3e50', fg='white', font=('times new roman', 15, 'bold'))
+    total_prod_label.pack()
+
+    total_prod_count_label = tk.Label(prod_frame, text='0', bg='#2c3e50', fg='white', font=('times new roman', 30, 'bold'))
+    total_prod_count_label.pack()
+
+    sales_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
+    sales_frame.place(x=600, y=495, height=170, width=280)
+    total_sales_icon = PhotoImage(file='graph.png')
+    total_sales_icon_label = tk.Label(sales_frame, image=total_sales_icon, bg='#2c3e50')
+    total_sales_icon_label.pack(pady=10)
+
+    total_sales_label = tk.Label(sales_frame, text='Total Sales', bg='#2c3e50', fg='white', font=('times new roman', 15, 'bold'))
+    total_sales_label.pack()
+
+    total_sales_count_label = tk.Label(sales_frame, text='0', bg='#2c3e50', fg='white', font=('times new roman', 30, 'bold'))
+    total_sales_count_label.pack()
+
+    root.mainloop()
+
+
+
+
+def login():
+    """Login function to validate Admin credentials."""
+    admin_id = admin_id_entry.get()
+    password = password_entry.get()
+
+    # Replace these values with your actual database authentication logic
+    valid_admin_id = "admin"  # Example Admin ID
+    valid_password = "1234"  # Example password
+
+    if admin_id == valid_admin_id and password == valid_password:
+        login_window.destroy()  # Close the login window
+        show_dashboard()  # Show the dashboard
+    else:
+        messagebox.showerror("Login Failed", "Invalid Admin ID or Password")
+
+
+# Create the Login Window
+login_window = tk.Tk()
+login_window.title("Admin Login")
+login_window.geometry("400x300+500+200")
+login_window.config(bg='white')
+
+# Create login form
+login_label = tk.Label(login_window, text="Admin Login", font=('times new roman', 20, 'bold'), bg='white', fg='#010048')
+login_label.pack(pady=20)
+
+admin_id_label = tk.Label(login_window, text="Admin ID", font=('times new roman', 15), bg='white')
+admin_id_label.pack(pady=5)
+admin_id_entry = tk.Entry(login_window, font=('times new roman', 15), width=25)
+admin_id_entry.pack(pady=5)
+
+password_label = tk.Label(login_window, text="Password", font=('times new roman', 15), bg='white')
+password_label.pack(pady=5)
+password_entry = tk.Entry(login_window, font=('times new roman', 15), width=25, show="*")  # Password input with masking
+password_entry.pack(pady=5)
+
+login_button = tk.Button(login_window, text="Login", font=('times new roman', 15, 'bold'), bg='#010048', fg='white',
+                         command=login)
+login_button.pack(pady=20)
+
+login_window.mainloop()
+
+
+
 
 
 
