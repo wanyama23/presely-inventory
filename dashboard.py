@@ -7,6 +7,8 @@ from employee import employee_form
 from supplier import supplier_form
 from category import category_form
 from product import product_form
+from sale import sale_form
+
 
 
 
@@ -240,7 +242,7 @@ product_button.pack(fill=tk.X)
 
 # Create sales button
 sales_icon = PhotoImage(file='trend.png')
-sales_button = tk.Button(leftFrame, image=sales_icon, compound=LEFT, text='Sales', font=('times new roman', 20, 'bold'), anchor='w')
+sales_button = tk.Button(leftFrame, image=sales_icon, compound=LEFT, text='Sales', font=('times new roman', 20, 'bold'), anchor='w',padx=10,command=lambda:sale_form(root))
 sales_button.pack(fill=tk.X)
 
 # Create exit button
