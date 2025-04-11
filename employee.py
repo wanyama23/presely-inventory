@@ -106,8 +106,6 @@ def select_data(event, empid_entry, name_entry, email_entry, gender_combobox, do
         messagebox.showerror("Error", f"Error: {e}")
 
 
-
-
 def add_employee(empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, usertype, password):
     if (empid == '' or name == '' or email == '' or gender == '' or dob == '' or contact == '' or employment_type == '' or
         education == '' or work_shift == '' or address.strip() == '' or doj == '' or salary == '' or usertype == '' or password == ''):
@@ -155,8 +153,6 @@ def add_employee(empid, name, email, gender, dob, contact, employment_type, educ
         connection.close()
 
 
-
-
 def clear_fields(empid_entry, name_entry, email_entry, gender_combobox,
                  dob_date_entry, contact_entry, employment_type_combobox,
                  education_combobox, work_shift_combobox, address_text,
@@ -176,10 +172,6 @@ def clear_fields(empid_entry, name_entry, email_entry, gender_combobox,
     salary_entry.delete(0, END)
     usertype_combobox.set('')
     password_entry.delete(0, END)
-
-
-
-
 
 
 def update_employee(empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, usertype, password, treeview):
@@ -229,7 +221,6 @@ def update_employee(empid, name, email, gender, dob, contact, employment_type, e
         finally:
             cursor.close()
             connection.close()
-   
 
 
 def delete_employee(empid, treeview):
@@ -490,20 +481,8 @@ def employee_form(root):
     update_button.grid(row=0,column=1,padx=20)
 
 
-    # update_button=tk.Button(button_frame,text='Update',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :update_employee(empid_entry.get(),name_entry.get(),email_entry.get(),gender_combobox.get(),
-    #                                                                                                                                               dob_date_entry.get(),contact_enrty.get(),employment_type_combobox.get(),
-    #                                                                                                                                               education_combobox.get(),work_shift_combobox.get(),address_text.get(1.0,END),
-    #                                                                                                                                               doj_date_entry.get(),salary_enrty.get(),usertype_combobox.get(),password_enrty.get()))
-    # update_button.grid(row=0,column=1,padx=20)
-
     delete_button=tk.Button(button_frame,text='Delete',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d')
     delete_button.grid(row=0,column=2,padx=20)
-
-    # clear_button=tk.Button(button_frame,text='clear',font=('times new roman',12),width=10,cursor='hand2',fg='white',bg='#0f4d7d',command=lambda :clear_fields(empid_entry,name_entry,email_entry,gender_combobox,
-    #                                                                                                                                               dob_date_entry,contact_enrty,employment_type_combobox,
-    #                                                                                                                                               education_combobox,work_shift_combobox,address_text,
-    #                                                                                                                                               doj_date_entry,salary_enrty,usertype_combobox,password_enrty,True))
-    # clear_button.grid(row=0,column=3,padx=20)
 
     clear_button = tk.Button(button_frame, text='Clear', font=('times new roman', 12), width=10,
                          cursor='hand2', fg='white', bg='#0f4d7d',
@@ -522,153 +501,4 @@ def employee_form(root):
 
 
 
-
-
-#     employee_treeview.bind(
-#     '<ButtonRelease-1>',
-#     lambda event: select_data(
-#         event, empid_entry, name_entry, email_entry, gender_combobox, dob_date_entry,
-#         contact_enrty, employment_type_combobox, education_combobox, work_shift_combobox,
-#         address_text, doj_date_entry, salary_enrty, usertype_combobox, password_enrty, employee_treeview
-#     )
-# )
-
-    
-
-    # employee_treeview.bind('<ButtonRelease-1>',lambda event:select_data(empid_entry,name_entry,email_entry,gender_combobox,dob_date_entry,contact_enrty,employment_type_combobox,education_combobox,work_shift_combobox,address_text,doj_date_entry,salary_enrty,usertype_combobox,password_enrty))
-
     create_database_table
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def connect_database():
-#     try:
-#         # Connect to MySQL database
-#         connection = pymysql.connect(host='localhost', user='root', password='1234', database='inventory_system')
-#         cursor = connection.cursor()
-#     except pymysql.MySQLError as e:
-#         # Show error message if connection fails
-#         messagebox.showerror('Error', f'Database connectivity issue: {str(e)}')
-#         return None, None
-    
-#     # Create database if it doesn't exist
-#     cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
-#     cursor.execute('USE inventory_system')
-
-#     # Create table if it doesn't exist
-#     cursor.execute('''CREATE TABLE IF NOT EXISTS employee_data (
-#                         empid INT PRIMARY KEY, 
-#                         name VARCHAR(100), 
-#                         email VARCHAR(100), 
-#                         gender VARCHAR(50), 
-#                         contact VARCHAR(100), 
-#                         dob VARCHAR(30), 
-#                         employment_type VARCHAR(50), 
-#                         education VARCHAR(100), 
-#                         work_shift VARCHAR(50), 
-#                         address VARCHAR(100), 
-#                         doj VARCHAR(30), 
-#                         salary VARCHAR(50), 
-#                         usertype VARCHAR(50), 
-#                         password VARCHAR(50)
-#                       )''')
-
-#     return cursor, connection
-    # connection.commit()
-    # connection.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # def connect_database():
-#     try:
-#         connection = pymysql.connect(host='localhost', user='root', password='1234')
-#         cursor = connection.cursor()
-#         cursor.execute('CREATE DATABASE IF NOT EXISTS inventory_system')
-#         cursor.execute('USE inventory_system')
-#         cursor.execute('''CREATE TABLE IF NOT EXISTS employee_data (
-#                             empid INT PRIMARY KEY, 
-#                             name VARCHAR(100), 
-#                             email VARCHAR(100), 
-#                             gender VARCHAR(50), 
-#                             contact VARCHAR(100), 
-#                             dob VARCHAR(30), 
-#                             employment_type VARCHAR(50), 
-#                             education VARCHAR(100), 
-#                             work_shift VARCHAR(50), 
-#                             address VARCHAR(100), 
-#                             doj VARCHAR(30), 
-#                             salary VARCHAR(50), 
-#                             usertype VARCHAR(50), 
-#                             password VARCHAR(50)
-#                           )''')
-#         return cursor, connection
-#     except pymysql.MySQLError as e:
-#         # Create a Tkinter root window
-#         root = tk()
-#         root.withdraw()  # Hide the root window
-#         messagebox.showerror('Error', f'Database connectivity issue: {str(e)}')
-#         root.destroy()  # Destroy the root window
-#         return None, None
-
-# def treeview_data():
-#     cursor, connection = connect_database()
-#     if not cursor or not connection:
-#         return
-#     cursor.execute('SELECT * FROM employee_data')
-#     employee_records = cursor.fetchall()
-#     print(employee_records)
-
-# def add_employee(empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, user_type, password):
-#     if (empid == '' or name == '' or email == '' or gender == 'Select Gender' or contact == '' or employment_type == 'select type' or education == 'Select Education' or work_shift == 'select Shift' or address == '\n' or salary == '' or user_type == 'select User Type' or password == ''):
-#         messagebox.showerror("Error", "All fields are required")
-#     else:
-#         cursor, connection = connect_database()
-#         if not cursor or not connection:
-#             return
-#         cursor.execute('INSERT INTO employee_data VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', (empid, name, email, gender, dob, contact, employment_type, education, work_shift, address, doj, salary, user_type, password))
-#         connection.commit()
-#         treeview_data()
-#         messagebox.showinfo('Success', 'Data is inserted successfully')

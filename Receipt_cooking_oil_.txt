@@ -1,0 +1,10 @@
+Customer Name: cooking oil 
+Phone Number: 00000000
+----------------------------------------
+Product        Qty       Price     
+----------------------------------------
+cooking oil    2         5000.00   
+----------------------------------------
+Total Amount: Ksh 5000.00
+----------------------------------------
+Thank you for shopping with us!

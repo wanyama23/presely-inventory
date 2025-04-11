@@ -1,0 +1,10 @@
+Customer Name: cereals
+Phone Number: 098863894
+----------------------------------------
+Product        Qty       Price     
+----------------------------------------
+cereals        2         4000.00   
+----------------------------------------
+Total Amount: Ksh 4000.00
+----------------------------------------
+Thank you for shopping with us!
