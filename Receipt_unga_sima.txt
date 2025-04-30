@@ -1,10 +1,10 @@
-Customer Name: cooking oil 
-Phone Number: 0897854673
+Customer Name: unga sima
+Phone Number: 0890786575
 ----------------------------------------
 Product        Qty       Price     
 ----------------------------------------
-cooking oil    2         5000.00   
+unga sima      3         5400.00   
 ----------------------------------------
-Total Amount: Ksh 5000.00
+Total Amount: Ksh 5400.00
 ----------------------------------------
 Thank you for shopping with us!

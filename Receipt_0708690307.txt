@@ -1,10 +1,10 @@
-Customer Name: cooking oil 
-Phone Number: 0897854673
+Invoice Number: INV-2338
+Phone Number: 0708690307
 ----------------------------------------
 Product        Qty       Price     
 ----------------------------------------
-cooking oil    2         5000.00   
+cereals        2         4000.00   
 ----------------------------------------
-Total Amount: Ksh 5000.00
+Total Amount: Ksh 4000.00
 ----------------------------------------
 Thank you for shopping with us!

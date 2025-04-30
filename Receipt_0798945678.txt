@@ -1,5 +1,5 @@
-Customer Name: cooking oil 
-Phone Number: 0897854673
+Invoice Number: INV-8166
+Phone Number: 0798945678
 ----------------------------------------
 Product        Qty       Price     
 ----------------------------------------

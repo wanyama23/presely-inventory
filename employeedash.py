@@ -100,91 +100,75 @@ def add_to_cart():
     cart_table.insert("", "end", values=(product_id.get(), name_entry.get(), quantity_entry.get(), f"{total_price:.2f}"))
     messagebox.showinfo("Cart", "Product added to cart successfully!")
 
-def generate_bill():
-    """Generates and displays a billing receipt in the Customer Billing Area."""
-    if not name_entry.get() or not phone_entry.get():
-        messagebox.showwarning("Missing Details", "Please enter customer name and phone number!")
+import random
+
+def generate_bill(phone_entry, cart_table, billing_label, product_table):
+    """Generates a billing receipt using an invoice number instead of customer name."""
+    if not phone_entry.get():
+        messagebox.showwarning("Missing Details", "Please enter phone number!")
         return
 
-    # Get cart items
     cart_items = cart_table.get_children()
     if not cart_items:
         messagebox.showwarning("Empty Cart", "No products in the cart!")
         return
 
-    # ✅ Correctly format receipt with customer details
-    customer_name = name_entry.get()
+    invoice_no = f"INV-{random.randint(1000, 9999)}"  # ✅ Generates unique invoice number
     phone_number = phone_entry.get()
 
-    receipt_text = f"Customer Name: {customer_name}\n"
-    receipt_text += f"Phone Number: {phone_number}\n"
+    receipt_text = f"Invoice Number: {invoice_no}\nPhone Number: {phone_number}\n"
     receipt_text += "-"*40 + "\n"
     receipt_text += f"{'Product':<15}{'Qty':<10}{'Price':<10}\n"
     receipt_text += "-"*40 + "\n"
 
     total_price = 0.0
-    sales = []  # Prepare records for database insertion
+    sales = []
 
     for item in cart_items:
         values = cart_table.item(item, "values")
-        product_id, product_name, quantity, price = values  # Ensure correct mapping
+        product_id, product_name, quantity, price = values
 
         receipt_text += f"{product_name:<15}{quantity:<10}{price:<10}\n"
         total_price += float(price)
 
-        # ✅ Save correct customer details to the database
-        sales.append((customer_name, phone_number, product_name, quantity, quantity, price, total_price))  # ✅ Corrected this
+        sales.append((invoice_no, phone_number, product_name, quantity, price, total_price))  
 
-    receipt_text += "-"*40 + "\n"
-    receipt_text += f"Total Amount: Ksh {total_price:.2f}\n"
-    receipt_text += "-"*40 + "\n"
-    receipt_text += "Thank you for shopping with us!\n"
+    receipt_text += "-"*40 + f"\nTotal Amount: Ksh {total_price:.2f}\n"
+    receipt_text += "-"*40 + "\nThank you for shopping with us!\n"
 
-    # ✅ Display bill correctly in UI
     billing_label.config(text=receipt_text, justify="left", anchor="w")
+    save_to_sales(sales, product_table, invoice_no)  
 
-    # ✅ Save to the database with correct structure
-    save_to_sales(sales)
-
-    # ✅ Clear the cart after generating the bill
-    # for item in cart_items:
-    #     cart_table.delete(item)
-
-    return receipt_text  # Return for printing
-
-
+    return receipt_text
 
  # Return for printing
 
-def print_bill():
-    """Handles printing the bill by exporting it to a text file and resets cart & customer details after printing."""
-    receipt_content = generate_bill()
-    if receipt_content:
-        try:
-            file_name = f"Receipt_{name_entry.get().replace(' ', '_')}.txt"
-            file_path = os.path.join(os.getcwd(), file_name)
-            
-            with open(file_path, "w") as file:
-                file.write(receipt_content)
-            
-            messagebox.showinfo("Print Successful", f"Receipt saved as {file_name}")
+def print_bill(phone_entry, cart_table, billing_label, product_table):
+    """Handles printing the bill and resets customer details after printing."""
+    receipt_content = generate_bill(phone_entry, cart_table, billing_label, product_table)  # ✅ Fixed argument passing
+    if not receipt_content:
+        return
 
-            # ✅ Clear customer details only if printing was successful
-            name_entry.delete(0, tk.END)
-            phone_entry.delete(0, tk.END)
+    try:
+        file_name = f"Receipt_{phone_entry.get().replace(' ', '_')}.txt"
+        file_path = os.path.join(os.getcwd(), file_name)
 
-            # ✅ Clear the cart only if printing was successful
-            for item in cart_table.get_children():
-                cart_table.delete(item)
+        with open(file_path, "w") as file:
+            file.write(receipt_content)
 
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save receipt: {e}")
+        messagebox.showinfo("Print Successful", f"Receipt saved as {file_name}")
+
+        phone_entry.delete(0, tk.END)
+        cart_table.delete(*cart_table.get_children())
+
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to save receipt: {e}")
 
 
 
 
-def save_to_sales(sales):
-    """Saves the billing record to the sales database and updates total sales count."""
+def save_to_sales(sales, product_table, invoice_no):
+    """Saves sales record and updates stock dynamically."""
     conn = connect_database()
     if not conn:
         return
@@ -192,24 +176,86 @@ def save_to_sales(sales):
     try:
         cursor = conn.cursor()
         for record in sales:
-            cursor.execute("""
-    INSERT INTO sales (customer_name, phone_number, product_name, quantity_sold, quantity, price, total_amount, sale_date)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-""", record)
+            invoice_no, phone_number, product_name, quantity_sold, price, total_amount = record  # ✅ Fixed unpacking
+            
+            cursor.execute("SELECT quantity FROM product_data WHERE name = %s", (product_name,))
+            current_stock = cursor.fetchone()
+            if not current_stock or current_stock[0] < int(quantity_sold):
+                messagebox.showerror("Stock Error", f"Not enough stock available for {product_name}.")
+                return
 
-            # cursor.execute("""
-            #     INSERT INTO sales (customer_name, phone_number, product_name, quantity_sold, quantity, price, total_amount)
-            #     VALUES (%s, %s, %s, %s, %s, %s, %s)
-            # """, record)  # ✅ Ensure correct value count
+            cursor.execute("""
+                INSERT INTO sales (invoice_no, phone_number, product_name, quantity_sold, price, total_amount, sale_date)
+                VALUES (%s, %s, %s, %s, %s, %s, NOW())
+            """, (invoice_no, phone_number, product_name, quantity_sold, price, total_amount))
+
+            cursor.execute("UPDATE product_data SET quantity = quantity - %s WHERE name = %s", (quantity_sold, product_name))
         
         conn.commit()
         conn.close()
-        
-        # ✅ Update total sales dynamically after saving transaction
-        update_sales_count(total_sales_count_label)
-    
+
+        populate_sales_table(product_table)  
+        populate_product_list()  
+
+        messagebox.showinfo("Success", "Sales recorded & stock updated!")
+
     except Exception as e:
         messagebox.showerror("Database Error", f"Error saving sales record: {e}")
+
+def populate_product_list():
+    product_table.delete(*product_table.get_children())  # ✅ Clear previous entries
+    products = fetch_products()
+
+    if not products:
+        messagebox.showwarning("No Data", "No products found in the database!")
+        return
+
+    for product in products:
+        product_table.insert("", "end", values=product)
+
+
+def on_product_select(event):
+    """Updates entry fields and dynamically adjusts stock information."""
+    selected_item = product_table.selection()  # ✅ Get selected row(s)
+
+    if selected_item:
+        product_data = product_table.item(selected_item[0], "values")  # ✅ Get first selected row's values
+
+        product_id.set(product_data[0])  # ✅ Store Product ID
+        name_entry.delete(0, tk.END)
+        name_entry.insert(0, product_data[1])  # ✅ Product name
+        
+        price_entry.delete(0, tk.END)
+        price_entry.insert(0, product_data[2])  # ✅ Base price
+
+        stock_label.config(text=f"In Stock: {product_data[3]}")  # ✅ Update stock availability
+
+        update_price(None)  # ✅ Ensure price updates when product is selected
+
+def populate_sales_table(table):
+    """Fetches sales data and updates the UI table."""
+    connection = connect_database()
+    if not connection:
+        return
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT invoice_no, sale_date, product_name, quantity_sold, price, total_amount FROM sales;")
+        rows = cursor.fetchall()
+
+        table.delete(*table.get_children())  
+
+        if not rows:
+            messagebox.showinfo("Info", "No sales records found.")
+            return
+
+        for row in rows:
+            table.insert("", tk.END, values=row)
+
+    except pymysql.err.ProgrammingError as e:
+        messagebox.showerror("Database Error", f"Error: {e}")
+    finally:
+        connection.close()
 
 
 
@@ -234,12 +280,19 @@ def update_sales_count(label):
 
 # === Show Admin Dashboard ===
 def show_dashboard():
-    global product_table, bg_image,product_table, cart_table, stock_label, name_entry, price_entry, quantity_entry, product_id, phone_entry, total_price_label, billing_label, sales_label, total_sales_count_label, sales_frame
+    global product_table, bg_image,product_table, cart_table, stock_label, name_entry, price_entry, quantity_entry, product_id, phone_entry, total_price_label, billing_label, sales_label, total_sales_count_label, sales_frame, populate_sales_table
 
     root = tk.Tk()
     root.title("Presely Management System")
     root.geometry("1400x668+0+0")
     root.config(bg="white")
+
+
+    phone_entry = tk.Entry(root)
+    billing_label = tk.Label(root, text="")
+    cart_table = ttk.Treeview(root)
+    product_table = ttk.Treeview(root)
+
 
 
     sales_frame = tk.Frame(root, bg='#2c3e50', bd=3, relief='ridge')
@@ -312,9 +365,9 @@ def show_dashboard():
     nameFrame = tk.Frame(customerFrame, bg="white")
     nameFrame.pack(pady=5, padx=10, fill="x")
 
-    tk.Label(nameFrame, text="Name:", font=("Arial", 12), bg="white").pack(side="left")
-    name_entry = tk.Entry(nameFrame, font=("Arial", 12), width=25)
-    name_entry.pack(side="left", padx=10)
+    # tk.Label(nameFrame, text="Name:", font=("Arial", 12), bg="white").pack(side="left")
+    # name_entry = tk.Entry(nameFrame, font=("Arial", 12), width=25)
+    # name_entry.pack(side="left", padx=10)
 
     phoneFrame = tk.Frame(customerFrame, bg="white")
     phoneFrame.pack(pady=5, padx=10, fill="x")
@@ -381,13 +434,101 @@ def show_dashboard():
     billing_label.pack(fill="x", padx=10, pady=5)
 
    
-    tk.Button(customerBillingFrame, text="Generate Bill", font=("Arial", 12), bg="#2ECC71", command=generate_bill).pack(pady=5)
-    tk.Button(customerBillingFrame, text="Print Bill", font=("Arial", 12), bg="#3498DB", command=print_bill).pack(pady=5)
+    # tk.Button(customerBillingFrame, text="Generate Bill", font=("Arial", 12), bg="#2ECC71", command=generate_bill).pack(pady=5)
+    # tk.Button(customerBillingFrame, text="Print Bill", font=("Arial", 12), bg="#3498DB", command=print_bill).pack(pady=5)
 
+    # Place buttons inside customerBillingFrame
+    generate_bill_button = tk.Button(customerBillingFrame, text="Generate Bill", command=lambda: generate_bill(phone_entry, cart_table, billing_label, product_table))
+    generate_bill_button.pack(pady=5)  # Adjust placement
+
+    print_bill_button = tk.Button(customerBillingFrame, text="Print Bill", command=lambda: print_bill(phone_entry, cart_table, billing_label, product_table))
+    print_bill_button.pack(pady=5)  # Adjust placement
+
+    
     root.mainloop()
 
 if __name__ == "__main__":
     show_dashboard()
+
+
+
+
+
+
+
+# def generate_bill(phone_entry, cart_table, billing_label):
+#     """Generates a billing receipt and returns the content."""
+#     if not phone_entry.get():
+#         messagebox.showwarning("Missing Details", "Please enter phone number!")
+#         return None
+
+#     cart_items = cart_table.get_children()
+#     if not cart_items:
+#         messagebox.showwarning("Empty Cart", "No products in the cart!")
+#         return None
+
+#     invoice_no = f"INV-{random.randint(1000, 9999)}"
+#     phone_number = phone_entry.get()
+
+#     receipt_text = f"Invoice Number: {invoice_no}\nPhone Number: {phone_number}\n"
+#     receipt_text += "-"*40 + "\n"
+#     receipt_text += f"{'Product':<15}{'Qty':<10}{'Price':<10}\n"
+#     receipt_text += "-"*40 + "\n"
+
+#     total_price = 0.0
+
+#     for item in cart_items:
+#         values = cart_table.item(item, "values")
+#         product_name, quantity, price = values[1], values[2], values[3]
+#         receipt_text += f"{product_name:<15}{quantity:<10}{price:<10}\n"
+#         total_price += float(price)
+
+#     receipt_text += "-"*40 + f"\nTotal Amount: Ksh {total_price:.2f}\n"
+#     receipt_text += "-"*40 + "\nThank you for shopping with us!\n"
+
+#     billing_label.config(text=receipt_text, justify="left", anchor="w")
+
+#     return receipt_text
+
+# import subprocess
+
+# def print_bill(phone_entry, cart_table, billing_label):
+#     """Prints the bill and clears customer details after printing."""
+#     receipt_content = generate_bill(phone_entry, cart_table, billing_label)
+#     if not receipt_content:
+#         return
+
+#     try:
+#         # Save receipt to file
+#         file_name = f"Receipt_{phone_entry.get().replace(' ', '_')}.txt"
+#         file_path = os.path.join(os.getcwd(), file_name)
+
+#         with open(file_path, "w") as file:
+#             file.write(receipt_content)
+
+#         # Send receipt to printer (platform-specific command)
+#         if os.name == 'nt':  # Windows
+#             os.startfile(file_path, "print")
+#         else:  # Linux/macOS
+#             subprocess.run(["lp", file_path])  # Uses 'lp' command for printing
+
+#         # Clear customer details after printing
+#         phone_entry.delete(0, tk.END)
+#         cart_table.delete(*cart_table.get_children())
+#         billing_label.config(text="")  # Clear displayed receipt
+
+#         messagebox.showinfo("Print Successful", "Receipt sent to printer!")
+
+#     except Exception as e:
+#         messagebox.showerror("Error", f"Failed to print receipt: {e}")
+
+
+
+# generate_bill_button = tk.Button(customerBillingFrame, text="Generate Bill", command=lambda: generate_bill(phone_entry, cart_table, billing_label))
+    # generate_bill_button.pack(pady=5)
+
+    # print_bill_button = tk.Button(customerBillingFrame, text="Print Bill", command=lambda: print_bill(phone_entry, cart_table, billing_label))
+    # print_bill_button.pack(pady=5)
 
 
 
@@ -413,7 +554,38 @@ if __name__ == "__main__":
 
 
 
+# def save_to_sales(sales):
+#     """Saves billing record to the database and updates stock quantity."""
+#     conn = connect_database()
+#     if not conn:
+#         return
+    
+#     try:
+#         cursor = conn.cursor()
+#         for record in sales:
+#             customer_name, phone_number, product_name, quantity_sold, _, price, total_amount = record
+            
+#             # ✅ Insert sale record into 'sales' table
+#             cursor.execute("""
+#                 INSERT INTO sales (customer_name, phone_number, product_name, quantity_sold, price, total_amount, sale_date)
+#                 VALUES (%s, %s, %s, %s, %s, %s, NOW())
+#             """, (customer_name, phone_number, product_name, quantity_sold, price, total_amount))
 
+#             # ✅ Reduce stock count in 'product_data' table
+#             cursor.execute("""
+#                 UPDATE product_data SET quantity = quantity - %s WHERE name = %s
+#             """, (quantity_sold, product_name))
+        
+#         conn.commit()
+#         conn.close()
+
+#         # ✅ Refresh UI to reflect updated stock
+#         populate_product_list()
+
+#         messagebox.showinfo("Success", "Sales recorded & stock updated!")
+    
+#     except Exception as e:
+#         messagebox.showerror("Database Error", f"Error saving sales record: {e}")
 
 
 

@@ -1,10 +1,10 @@
-Customer Name: cooking oil 
-Phone Number: 0897854673
+Customer Name: unga ngano
+Phone Number: 078904567894
 ----------------------------------------
 Product        Qty       Price     
 ----------------------------------------
-cooking oil    2         5000.00   
+unga ngano     1         2100.00   
 ----------------------------------------
-Total Amount: Ksh 5000.00
+Total Amount: Ksh 2100.00
 ----------------------------------------
 Thank you for shopping with us!
